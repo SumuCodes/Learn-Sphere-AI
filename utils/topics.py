@@ -593,3 +593,6 @@ def _score_topic(
             score += 2.0
 
     return score
+# Run migration on import
+_ensure_lectures_table()
+    
