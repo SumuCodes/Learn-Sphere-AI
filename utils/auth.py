@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 # Ensure data directory exists
 DATA_DIR = Path(__file__).parent.parent / "data"
-DATA_DIR.mkdir(exist_ok=True)
+DATA_DIR.mkdir(parents=True, exist_ok=True)
 
 DB_PATH = DATA_DIR / "users.db"
 
@@ -283,3 +283,7 @@ def logout_user():
         if key in st.session_state:
             del st.session_state[key]
     logger.info(f"User logged out: {username}")
+
+
+# Automatically create the new user database and tables.
+init_db()
