@@ -1,0 +1,31 @@
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+**/secrets.toml
+*.pem
+*.key
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+.idea/
+.vscode/
+.DS_Store
+
+# Local databases and user data
+data/*.db
+data/**/*.db
+
+# Local vector databases and generated indexes
+vector_db/
+data/vector_db/
+
+# Generated checkpoints
+.checkpoints/
+data/.checkpoints/
+
+# Python cache
+__pycache__/
+**/__pycache__/

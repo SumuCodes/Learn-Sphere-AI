@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Lecture Recorder — Architecture</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #0A1628 0%, #0D2545 50%, #1A3A6B 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+  }
+  
+  .container {
+    width: 100%;
+    max-width: 1100px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.5px;
+  }
+  .header p {
+    color: rgba(255,255,255,0.55);
+    font-size: 14px;
+    margin-top: 6px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .header-badge {
+    display: inline-block;
+    background: rgba(46,95,194,0.4);
+    border: 1px solid rgba(46,95,194,0.6);
+    color: #7EB3FF;
+    font-size: 12px;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-top: 10px;
+    letter-spacing: 1px;
+  }
+
+  /* Main card */
+  .arch-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px;
+    padding: 36px;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Section labels */
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 14px;
+  }
+
+  /* Pipeline row */
+  .pipeline-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0;
+    margin-bottom: 8px;
+  }
+
+  /* Nodes */
+  .node {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 14px 18px;
+    border-radius: 12px;
+    min-width: 110px;
+    position: relative;
+    transition: transform 0.2s;
+  }
+  .node:hover { transform: translateY(-2px); }
+  
+  .node-icon { font-size: 26px; margin-bottom: 6px; }
+  .node-title { font-size: 12px; font-weight: 700; color: white; line-height: 1.3; }
+  .node-sub { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 3px; }
+
+  /* Node styles */
+  .node-input {
+    background: linear-gradient(135deg, #1A3A6B, #2E5FC2);
+    border: 1.5px solid rgba(46,95,194,0.7);
+  }
+  .node-process {
+    background: rgba(46,95,194,0.2);
+    border: 1.5px solid rgba(46,95,194,0.5);
+  }
+  .node-ml {
+    background: linear-gradient(135deg, #0D3B5E, #1A6B9B);
+    border: 1.5px solid rgba(26,107,155,0.7);
+  }
+  .node-output {
+    background: linear-gradient(135deg, #1B4332, #2D6A4F);
+    border: 1.5px solid rgba(45,106,79,0.7);
+  }
+  .node-ui {
+    background: linear-gradient(135deg, #3D1A6B, #5E2FC2);
+    border: 1.5px solid rgba(94,47,194,0.7);
+  }
+
+  /* Arrow */
+  .arrow {
+    color: rgba(46,95,194,0.7);
+    font-size: 18px;
+    padding: 0 6px;
+    flex-shrink: 0;
+  }
+  .arrow-down {
+    text-align: center;
+    font-size: 22px;
+    color: rgba(46,95,194,0.7);
+    margin: 4px 0;
+    line-height: 1;
+  }
+
+  /* Divider section */
+  .divider {
+    border: none;
+    border-top: 1px dashed rgba(255,255,255,0.12);
+    margin: 20px 0;
+  }
+
+  /* ML Block */
+  .ml-block {
+    background: rgba(26,107,155,0.15);
+    border: 1.5px solid rgba(26,107,155,0.4);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .ml-block-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #7EB3FF;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ml-formula {
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(126,179,255,0.25);
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: #A8D1FF;
+    letter-spacing: 1px;
+    text-align: center;
+    margin: 10px 0;
+  }
+
+  /* LSTM Block */
+  .lstm-block {
+    background: rgba(61,26,107,0.2);
+    border: 1.5px solid rgba(94,47,194,0.4);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin: 16px 0;
+  }
+  .lstm-block-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #C4A8FF;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .gate-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .gate {
+    flex: 1;
+    min-width: 150px;
+    background: rgba(0,0,0,0.25);
+    border-radius: 10px;
+    padding: 12px;
+    border: 1px solid rgba(196,168,255,0.2);
+  }
+  .gate-name { font-size: 11px; font-weight: 700; color: #C4A8FF; margin-bottom: 4px; }
+  .gate-desc { font-size: 11px; color: rgba(255,255,255,0.5); line-height: 1.4; }
+  .gate-eq { font-family: monospace; font-size: 11px; color: #C4A8FF; margin-top: 5px; opacity: 0.8; }
+
+  /* UI Block */
+  .ui-block {
+    background: rgba(26,58,107,0.15);
+    border: 1.5px solid rgba(46,95,194,0.35);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-top: 16px;
+  }
+  .ui-block-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #7EB3FF;
+    margin-bottom: 14px;
+  }
+  .ui-panels {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .ui-panel {
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 14px;
+  }
+  .ui-panel-title { font-size: 12px; font-weight: 700; color: white; margin-bottom: 8px; }
+  .ui-panel-item { font-size: 11px; color: rgba(255,255,255,0.5); padding: 3px 0; }
+  .ui-panel-item::before { content: "• "; color: #7EB3FF; }
+
+  /* Tech badges */
+  .tech-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+    justify-content: center;
+  }
+  .tech-badge {
+    background: rgba(46,95,194,0.2);
+    border: 1px solid rgba(46,95,194,0.4);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #7EB3FF;
+  }
+
+  /* Footer */
+  .footer {
+    text-align: center;
+    margin-top: 24px;
+    color: rgba(255,255,255,0.3);
+    font-size: 11px;
+  }
+
+  @media (max-width: 600px) {
+    .pipeline-row { gap: 6px; }
+    .node { min-width: 80px; padding: 10px 12px; }
+    .node-title { font-size: 10px; }
+    .arrow { font-size: 14px; }
+    .ui-panels { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🎓 AI Lecture Recorder</h1>
+    <p>Technical Architecture — System Design</p>
+    <div class="header-badge">YouTube → Audio → Text → Vectors → LSTM Chat</div>
+  </div>
+
+  <!-- Main Architecture Card -->
+  <div class="arch-card">
+
+    <!-- Section 1: Data Ingestion Pipeline -->
+    <div class="section-label">① Data Ingestion Pipeline</div>
+    
+    <div class="pipeline-row">
+      <div class="node node-input">
+        <div class="node-icon">🎬</div>
+        <div class="node-title">YouTube<br>Video</div>
+        <div class="node-sub">URL Input</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node node-process">
+        <div class="node-icon">🎧</div>
+        <div class="node-title">Audio<br>MP3</div>
+        <div class="node-sub">yt-dlp</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node node-process">
+        <div class="node-icon">📈</div>
+        <div class="node-title">Wave<br>form</div>
+        <div class="node-sub">Librosa</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node node-process">
+        <div class="node-icon">📝</div>
+        <div class="node-title">Text<br>Transcript</div>
+        <div class="node-sub">Whisper AI</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node node-process">
+        <div class="node-icon">✂️</div>
+        <div class="node-title">Data<br>Chunks</div>
+        <div class="node-sub">512 tokens</div>
+      </div>
+      <div class="arrow">→</div>
+      <div class="node node-ml">
+        <div class="node-icon">🔢</div>
+        <div class="node-title">Vector<br>Embeddings</div>
+        <div class="node-sub">384-dim</div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <!-- Section 2: ML Search Block -->
+    <div class="section-label">② Machine Learning — Similarity Search</div>
+
+    <div class="ml-block">
+      <div class="ml-block-title">
+        🔍 Cosine Similarity Search Engine
+        <span style="background:rgba(126,179,255,0.15);padding:2px 10px;border-radius:12px;font-size:10px;">FAISS Index</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:center;">
+        <div>
+          <div style="font-size:12px;color:rgba(255,255,255,0.65);line-height:1.8;">
+            User query is embedded into the same vector space as lecture chunks. 
+            Vectors closest in angle return the most semantically relevant content.
+          </div>
+          <div style="margin-top:10px;font-size:11px;color:rgba(126,179,255,0.7);">
+            ✦ Score → 1.0 : Highly relevant<br>
+            ✦ Score → 0.0 : Unrelated<br>
+            ✦ Top-K results passed to LSTM
+          </div>
+        </div>
+        <div>
+          <div class="ml-formula">cos(θ) = A · B / ‖A‖ × ‖B‖</div>
+          <div style="text-align:center;font-size:11px;color:rgba(126,179,255,0.6);margin-top:6px;">Cosine Similarity Formula</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <!-- Section 3: LSTM Block -->
+    <div class="section-label">③ LSTM — Long Short-Term Memory</div>
+
+    <div class="lstm-block">
+      <div class="lstm-block-title">
+        🧠 LSTM Context Memory — Multi-Turn Conversation
+      </div>
+      <div class="gate-row">
+        <div class="gate">
+          <div class="gate-name">🔴 Forget Gate</div>
+          <div class="gate-desc">Decides what info to discard from previous context</div>
+          <div class="gate-eq">f_t = σ(Wf·[h,x] + b)</div>
+        </div>
+        <div class="gate">
+          <div class="gate-name">🔵 Input Gate</div>
+          <div class="gate-desc">Controls what new information to store in memory</div>
+          <div class="gate-eq">i_t = σ(Wi·[h,x] + b)</div>
+        </div>
+        <div class="gate">
+          <div class="gate-name">🟢 Output Gate</div>
+          <div class="gate-desc">Determines what hidden state to pass forward</div>
+          <div class="gate-eq">h_t = o_t ⊙ tanh(c_t)</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow-down">↓</div>
+
+    <!-- Section 4: Streamlit UI -->
+    <div class="section-label">④ Streamlit User Interface</div>
+
+    <div class="ui-block">
+      <div class="ui-block-title">🖥️ Streamlit Web Application</div>
+      <div class="ui-panels">
+        <div class="ui-panel">
+          <div class="ui-panel-title">👤 User Auth</div>
+          <div class="ui-panel-item">User Registration</div>
+          <div class="ui-panel-item">Secure Login</div>
+          <div class="ui-panel-item">Session Management</div>
+          <div class="ui-panel-item">Profile Settings</div>
+        </div>
+        <div class="ui-panel">
+          <div class="ui-panel-title">💬 Chat Interface</div>
+          <div class="ui-panel-item">Multi-turn Conversation</div>
+          <div class="ui-panel-item">LSTM Memory Context</div>
+          <div class="ui-panel-item">Semantic Search Results</div>
+          <div class="ui-panel-item">Similarity Scores Display</div>
+        </div>
+        <div class="ui-panel">
+          <div class="ui-panel-title">🎬 Video Processing</div>
+          <div class="ui-panel-item">YouTube URL Input</div>
+          <div class="ui-panel-item">Pipeline Progress</div>
+          <div class="ui-panel-item">Waveform Preview</div>
+          <div class="ui-panel-item">Transcript View</div>
+        </div>
+        <div class="ui-panel">
+          <div class="ui-panel-title">📊 Dashboard</div>
+          <div class="ui-panel-item">Processing Statistics</div>
+          <div class="ui-panel-item">Lecture Library</div>
+          <div class="ui-panel-item">Search Analytics</div>
+          <div class="ui-panel-item">Architecture View</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tech Stack Badges -->
+    <div class="tech-row">
+      <span class="tech-badge">🎬 yt-dlp</span>
+      <span class="tech-badge">🎧 FFmpeg</span>
+      <span class="tech-badge">📈 Librosa</span>
+      <span class="tech-badge">🗣️ Whisper AI</span>
+      <span class="tech-badge">✂️ LangChain</span>
+      <span class="tech-badge">🔢 sentence-transformers</span>
+      <span class="tech-badge">🗄️ FAISS</span>
+      <span class="tech-badge">🧠 PyTorch LSTM</span>
+      <span class="tech-badge">🖥️ Streamlit</span>
+    </div>
+
+  </div><!-- /arch-card -->
+
+  <div class="footer">
+    AI Lecture Recorder — Technical Architecture Diagram — Blue & White Theme
+  </div>
+
+</div>
+
+</body>
+</html>
