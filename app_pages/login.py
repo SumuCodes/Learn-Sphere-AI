@@ -30,7 +30,7 @@ def show():
                     if not username or not password:
                         toast_error("Please enter both username and password.")
                     else:
-                        user = authenticate_user(username, password)
+                        user = authenticate_user(username.strip(), password)
                         if user:
                             login_user(user['id'])
                             toast_success(f"Welcome back, {user['username']}! 🎉")
