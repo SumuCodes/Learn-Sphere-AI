@@ -1,153 +1,98 @@
-# 🎓 AI Lecture Recorder
+# Learn Sphere AI
 
-**Transform YouTube lectures into an intelligent, searchable knowledge base with AI-powered Q&A.**
+**An AI-powered learning platform that transforms YouTube lectures into searchable learning material with AI-powered Q&A.**
 
----
+## Overview
 
-## 🏗️ Architecture
+Learn Sphere AI helps learners work with educational video content and access AI-assisted learning features.
 
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│                    AI LECTURE RECORDER — PIPELINE                    │
-├─────────────────────────────────────────────────────────────────────┤
-│                                                                       │
-│  🎬 YouTube URL                                                       │
-│       │                                                               │
-│       ▼  [yt-dlp]                                                     │
-│  🎧 MP3 Audio File                                                    │
-│       │                                                               │
-│       ▼  [Librosa]                                                    │
-│  📈 Waveform Visualization                                            │
-│       │                                                               │
-│       ▼  [OpenAI Whisper]                                             │
-│  📝 Text Transcript                                                   │
-│       │                                                               │
-│       ▼  [LangChain / Custom]                                         │
-│  ✂️  Data Chunks (512 tokens, 64 overlap)                            │
-│       │                                                               │
-│       ▼  [sentence-transformers]                                      │
-│  🔢 Vector Embeddings (384-dim)                                       │
-│       │                                                               │
-│       ▼  [FAISS]                                                      │
-│  🗄️ Vector Store / Index                                             │
-│       │                                                               │
-│  ┌────┴──────────────────────────────────────────────────────────┐   │
-│  │          🔍 ML SEARCH BLOCK — COSINE SIMILARITY               │   │
-│  │                                                                │   │
-│  │   User Query → Embed → cos(θ) = (A·B)/(‖A‖×‖B‖) → Top-K    │   │
-│  └────────────────────────────────────────────────────────────────┘   │
-│       │                                                               │
-│       ▼  [PyTorch LSTM]                                               │
-│  🧠 LSTM Context Memory                                               │
-│       │  ├── Forget Gate: what to discard                            │
-│       │  ├── Input Gate: what new info to store                      │
-│       │  └── Output Gate: what to pass forward                       │
-│       │                                                               │
-│  ┌────┴──────────────────────────────────────────────────────────┐   │
-│  │              🖥️ STREAMLIT UI                                   │   │
-│  │   ┌─────────────────┐    ┌─────────────────────────────────┐  │   │
-│  │   │  👤 User Auth   │    │     💬 Chat Interface           │  │   │
-│  │   │  - Login        │    │     - Ask questions             │  │   │
-│  │   │  - Register     │    │     - LSTM multi-turn memory    │  │   │
-│  │   └─────────────────┘    └─────────────────────────────────┘  │   │
-│  └────────────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────────┘
-```
+## Architecture
 
----
+The original project documentation describes this lecture-processing pipeline:
 
-## 🚀 Quick Start
+1. **YouTube audio extraction** using `yt-dlp`
+2. **Audio processing** using FFmpeg and Librosa
+3. **Speech transcription** using OpenAI Whisper
+4. **Transcript chunking** for retrieval
+5. **Text embeddings** using `sentence-transformers`
+6. **Vector search** for finding relevant lecture content
+7. **AI-assisted question answering** through a Streamlit interface
 
-### 1. Clone & Install
+The exact implementation and technologies used by the current code should be verified against the source files.
+
+## Quick Start
+
+### 1. Clone the repository
 
 ```bash
-git clone <repo-url>
-cd ai_lecture_recorder
+git clone https://github.com/SumuCodes/Learn-Sphere-AI.git
+cd Learn-Sphere-AI
+```
+
+### 2. Create a virtual environment
+
+```bash
+python -m venv venv
+```
+
+Activate it on Windows:
+
+```powershell
+.\venv\Scripts\Activate.ps1
+```
+
+### 3. Install dependencies
+
+```bash
 pip install -r requirements.txt
 ```
 
-> **FFmpeg required:** `brew install ffmpeg` (Mac) | `sudo apt install ffmpeg` (Linux)
+FFmpeg may also be required for audio-processing features. Install it using the appropriate method for your operating system.
 
-### 2. Run the App
+### 4. Run the application
 
 ```bash
 streamlit run app.py
 ```
 
-### 3. Use the App
+You can also check `run_app.bat` for the project's Windows launch instructions.
 
-1. Register/Login at the login screen
-2. Go to **Process Video** → paste a YouTube URL
-3. Wait for the pipeline to complete
-4. Go to **AI Chat** → ask questions about the lecture!
+## Project Structure
 
----
-
-## 📁 Project Structure
-
-```
-ai_lecture_recorder/
-│
-├── app.py                    # Main Streamlit application
-│
-├── utils/
-│   ├── audio_processor.py    # YouTube → MP3 → Waveform → Transcript
-│   └── vector_store.py       # Chunks → Embeddings → FAISS → Cosine Search
-│
+```text
+Learn-Sphere-AI/
+├── app.py
+├── app_pages/
+├── assets/
+├── components/
 ├── models/
-│   └── lstm_chat.py          # LSTM context-aware chat manager
-│
-├── assets/                   # Static files (images, icons)
-├── pages/                    # Additional Streamlit pages
-├── components/               # Reusable UI components
-│
+├── styles/
+├── utils/
+├── config.py
 ├── requirements.txt
+├── run_app.bat
 └── README.md
 ```
 
----
+## Technologies
 
-## 🔬 Key ML Concepts Used
+The project source and original documentation reference technologies including:
 
-### Cosine Similarity
-```
-cos(θ) = (A · B) / (‖A‖ × ‖B‖)
+- Python
+- Streamlit
+- `yt-dlp`
+- FFmpeg and Librosa
+- OpenAI-compatible API integrations
+- Transcript processing and vector retrieval
 
-- Score = 1.0  →  Identical meaning
-- Score = 0.0  →  Unrelated
-- Score = -1.0 →  Opposite meaning
-```
+See `requirements.txt` and the implementation files for the project's dependencies and details.
 
-### LSTM Gating (Long Short-Term Memory)
-```
-Forget Gate:  f_t = σ(Wf · [h_{t-1}, x_t] + bf)
-Input Gate:   i_t = σ(Wi · [h_{t-1}, x_t] + bi)
-Cell Update:  c_t = f_t ⊙ c_{t-1} + i_t ⊙ tanh(Wc · [h_{t-1}, x_t] + bc)
-Output Gate:  h_t = σ(Wo · [h_{t-1}, x_t] + bo) ⊙ tanh(c_t)
-```
+## API Keys and Privacy
 
----
+Configure API keys through the application's supported settings rather than committing credentials to the repository.
 
-## 🛠️ Tech Stack
+**Never commit API keys, passwords, private keys, local user databases, or personal data.**
 
-| Layer | Technology | Purpose |
-|-------|-----------|---------|
-| Download | yt-dlp | YouTube audio extraction |
-| Audio | FFmpeg + Librosa | MP3 + waveform analysis |
-| STT | OpenAI Whisper | Speech → Text |
-| Chunking | LangChain | Split transcript |
-| Embeddings | sentence-transformers | Text → Vectors |
-| Vector DB | FAISS | Fast similarity search |
-| Search | Cosine Similarity | Semantic retrieval |
-| Chat Memory | PyTorch LSTM | Context management |
-| UI | Streamlit | Web interface |
+## License
 
----
-
-## 📝 License
-
-MIT License — Free to use and modify.
-
----
-
-*Built with ❤️ using Streamlit, Whisper, FAISS, and PyTorch*
+No license has been specified in this repository yet. Add a license file if you intend to define the terms under which others may use or modify the project.
