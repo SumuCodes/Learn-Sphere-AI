@@ -15,17 +15,17 @@ st.set_page_config(
 
 # ── Now safe to import the rest ──
 from utils.session import init_session
-from utils.auth import init_db
+from utils.auth import init_db as init_users_db
+from utils import topics
 from components.sidebar import render_sidebar
 from components.floating_tutor import render_floating_tutor
 from utils.navigation import navigate_to_page
 
 logger = logging.getLogger(__name__)
 
-# ── Initialize DB (once) ──
-if 'db_initialized' not in st.session_state:
-    init_db()
-    st.session_state.db_initialized = True
+# ── Initialize databases ──
+init_users_db()
+# Importing utils.topics creates performance.db and its lectures table.
 
 # ── Initialize Session ──
 init_session()
